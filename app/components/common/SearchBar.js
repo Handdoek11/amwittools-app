@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
-import theme from '../../theme';
+import theme from '../../themes/theme';
 
 /**
  * Universal search bar component with customizable behavior

@@ -1,6 +1,5 @@
 // app/components/categories/CategoryList.js
-import React from 'react';
-import { FlatList, View, StyleSheet } from 'react-native';
+import { FlatList, View, StyleSheet, Text } from 'react-native';
 import { theme } from '../../styles';
 import CategoryCard from './CategoryCard';
 import { HeadingMedium, BodyMedium } from '../common/Typography';
@@ -78,5 +77,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+const CategoryList = ({ /* your props */ }) => {
+  // Component logic
+};
 
 export default CategoryList;

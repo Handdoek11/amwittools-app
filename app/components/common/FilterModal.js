@@ -1,17 +1,21 @@
-// app/components/common/FilterModal.js
-import React, { useState, useEffect } from 'react';
-import { 
-  StyleSheet, 
-  View, 
+// app/components/filters/FilterModal.js
+import { useState, useEffect } from 'react';
+import {
+  View,
+  StyleSheet,
   Modal, 
-  Text, 
-  ScrollView, 
   TouchableOpacity, 
-  SafeAreaView 
+  ScrollView,
+  TouchableWithoutFeedback,
+  Platform
 } from 'react-native';
-import { Button, Divider, RadioButton, Checkbox, Chip } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../../themes/theme';
+import { MaterialIcons } from '@expo/vector-icons';
+import { theme } from '../../styles';
+import { HeadingMedium, BodyMedium, BodySmall, Label } from '../common/Typography';
+import Button from '../common/Button';
+import Divider from '../common/Divider';
+import PriceRangeSlider from './PriceRangeSlider';
+import CheckboxGroup from './CheckboxGroup';
 
 const FilterModal = ({ 
   visible, 

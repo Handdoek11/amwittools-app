@@ -29,7 +29,8 @@
     "react-native-svg": "15.8.0",
     "react-native-vector-icons": "^10.2.0",
     "react-query": "^3.39.3",
-    "use-debounce": "^10.0.4"
+    "use-debounce": "^10.0.4",
+    "expo-dev-client": "~5.0.14"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

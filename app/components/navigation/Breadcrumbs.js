@@ -1,7 +1,5 @@
 // app/components/navigation/Breadcrumbs.js
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../styles';
 import { BodySmall } from '../common/Typography';

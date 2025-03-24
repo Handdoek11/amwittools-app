@@ -1,10 +1,9 @@
-// app/components/categories/CategoryCard.js
-import React from 'react';
-import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { HeadingSmall, Caption } from '../common/Typography';
-import Card from '../common/Card';
+// app/components/categories/CategoryList.js
+import { FlatList, View, StyleSheet, Text } from 'react-native';
 import { theme } from '../../styles';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import CategoryCard from './CategoryCard';
+import { HeadingMedium, BodyMedium } from '../common/Typography';
+
 
 // Helper functie om het juiste pictogram voor elke categorie te krijgen
 const getCategoryIcon = (categoryId) => {
@@ -375,3 +374,9 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.colors.neutral200,
   },
 });
+
+const CategoryList = ({ /* your props */ }) => {
+  // Component logic
+};
+
+export default CategoryList;
