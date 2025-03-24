@@ -213,8 +213,6 @@ const styles = StyleSheet.create({
 export default ProductCard;
 
 // app/components/products/ProductList.js
-import React from 'react';
-import { FlatList, View, StyleSheet, ActivityIndicator } from 'react-native';
 import { theme } from '../../styles';
 import ProductCard from './ProductCard';
 import { BodyMedium, HeadingMedium } from '../common/Typography';
