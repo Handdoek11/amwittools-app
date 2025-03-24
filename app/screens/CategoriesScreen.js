@@ -1,171 +1,207 @@
 // app/screens/CategoriesScreen.js
-import React from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, SafeAreaView } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
-import { ActivityIndicator, Card } from 'react-native-paper';
-import { Image } from 'expo-image';
-import { productService } from '../services/productService';
-import { colors } from '../themes/theme';
+import React, { useState, useEffect } from 'react';
+import { 
+  View, 
+  StyleSheet, 
+  ScrollView, 
+  RefreshControl,
+  ActivityIndicator,
+  SafeAreaView
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useQuery } from 'react-query';
+
+// Services
+import { getMainCategories, getPromotionalCategories, getPopularCategories } from '../services/productService';
+
+// Components
+import CategoryList from '../components/categories/CategoryList';
+import SubcategoryList from '../components/categories/SubcategoryList';
+import { DisplaySmall, BodyMedium } from '../components/common/Typography';
+import SearchBar from '../components/common/SearchBar';
+
+// Styling
+import { theme, layoutStyles } from '../styles';
 
 const CategoriesScreen = () => {
   const navigation = useNavigation();
-  
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => productService.getCategories(),
-  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
-  const categories = data?.data || [];
+  // Fetch main categories
+  const {
+    data: mainCategories,
+    isLoading: isLoadingMain,
+    isError: isErrorMain,
+    error: errorMain,
+    refetch: refetchMain,
+  } = useQuery(['mainCategories'], () => getMainCategories());
 
+  // Fetch promotional categories
+  const {
+    data: promotionalCategories,
+    isLoading: isLoadingPromo,
+    refetch: refetchPromo,
+  } = useQuery(['promotionalCategories'], () => getPromotionalCategories());
+
+  // Fetch popular categories
+  const {
+    data: popularCategories,
+    isLoading: isLoadingPopular,
+    refetch: refetchPopular,
+  } = useQuery(['popularCategories'], () => getPopularCategories());
+
+  // Handle refreshing
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([refetchMain(), refetchPromo(), refetchPopular()]);
+    setRefreshing(false);
+  };
+
+  // Handle category press navigation
   const handleCategoryPress = (category) => {
-    navigation.navigate('CategoryProducts', {
+    navigation.navigate('CategoryProducts', { 
       categoryId: category.id,
       categoryName: category.name,
+      categoryType: 'main'
     });
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      onPress={() => handleCategoryPress(item)}
-      activeOpacity={0.7}
-      style={styles.categoryItem}
-    >
-      <Card style={styles.card}>
-        {item.image ? (
-          <Image
-            style={styles.categoryImage}
-            source={item.image.src}
-            contentFit="cover"
-            transition={200}
-          />
-        ) : (
-          <View style={[styles.categoryImage, styles.placeholderImage]} />
-        )}
-        <View style={styles.overlay} />
-        <View style={styles.categoryInfo}>
-          <Text style={styles.categoryName}>{item.name}</Text>
-          <Text style={styles.categoryCount}>{item.count} producten</Text>
-        </View>
-      </Card>
-    </TouchableOpacity>
-  );
+  // Handle subcategory press
+  const handleSubcategoryPress = (subcategory) => {
+    navigation.navigate('CategoryProducts', { 
+      categoryId: subcategory.id,
+      categoryName: subcategory.name,
+      categoryType: 'sub',
+      parentCategoryId: subcategory.parentId,
+    });
+  };
+
+  // Handle search
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    
+    if (query.trim()) {
+      navigation.navigate('Search', { initialQuery: query });
+    }
+  };
+
+  // Render loading state
+  if (isLoadingMain && !refreshing && !mainCategories) {
+    return (
+      <View style={layoutStyles.center}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  // Render error state
+  if (isErrorMain && !mainCategories) {
+    return (
+      <View style={[layoutStyles.center, layoutStyles.contentContainer]}>
+        <BodyMedium style={styles.errorText}>
+          Er is een fout opgetreden bij het laden van de categorieën.
+        </BodyMedium>
+        <BodyMedium style={styles.errorDetail}>
+          {errorMain?.message || 'Probeer het later opnieuw.'}
+        </BodyMedium>
+      </View>
+    );
+  }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Categorieën</Text>
+    <SafeAreaView style={layoutStyles.screenContainer}>
+      <View style={styles.searchContainer}>
+        <SearchBar
+          placeholder="Zoek producten of categorieën..."
+          value={searchQuery}
+          onChangeText={handleSearch}
+          onSubmitEditing={() => handleSearch(searchQuery)}
+        />
       </View>
 
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Categorieën laden...</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* Header */}
+        <DisplaySmall style={styles.header}>Categorieën</DisplaySmall>
+        
+        {/* Promotionele Categorieën */}
+        {promotionalCategories && promotionalCategories.length > 0 && (
+          <CategoryList
+            title="Aanbiedingen & Acties"
+            categories={promotionalCategories}
+            onCategoryPress={handleCategoryPress}
+            horizontal={true}
+            cardSize="medium"
+            showProductCount={true}
+          />
+        )}
+        
+        {/* Populaire Categorieën */}
+        {popularCategories && popularCategories.length > 0 && (
+          <CategoryList
+            title="Populaire Categorieën"
+            categories={popularCategories}
+            onCategoryPress={handleCategoryPress}
+            horizontal={true}
+            cardSize="medium"
+            showProductCount={true}
+          />
+        )}
+        
+        {/* Alle Categorieën */}
+        <View style={styles.mainCategoriesSection}>
+          <DisplaySmall style={styles.sectionTitle}>Alle Categorieën</DisplaySmall>
+          
+          {mainCategories && mainCategories.map((category) => (
+            <SubcategoryList
+              key={category.id}
+              category={category}
+              subcategories={category.subcategories || []}
+              onSubcategoryPress={handleSubcategoryPress}
+              initiallyExpanded={false}
+            />
+          ))}
         </View>
-      ) : error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>
-            Er is een fout opgetreden bij het laden van de categorieën.
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={categories}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.categoriesList}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>
-              Geen categorieën gevonden
-            </Text>
-          }
-        />
-      )}
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
+  searchContainer: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    backgroundColor: theme.colors.primary,
+  },
+  scrollContent: {
+    paddingBottom: theme.spacing.xxl,
   },
   header: {
-    padding: 16,
-    backgroundColor: colors.primary,
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+    marginHorizontal: theme.spacing.md,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
+  sectionTitle: {
+    marginTop: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+    marginHorizontal: theme.spacing.md,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#666',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+  mainCategoriesSection: {
+    marginTop: theme.spacing.md,
   },
   errorText: {
-    fontSize: 16,
-    color: '#666',
+    color: theme.colors.error,
     textAlign: 'center',
+    marginBottom: theme.spacing.sm,
   },
-  categoriesList: {
-    padding: 16,
-  },
-  categoryItem: {
-    marginBottom: 16,
-  },
-  card: {
-    overflow: 'hidden',
-  },
-  categoryImage: {
-    width: '100%',
-    height: 120,
-    backgroundColor: '#f5f5f5',
-  },
-  placeholderImage: {
-    backgroundColor: '#e0e0e0',
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-  },
-  categoryInfo: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-  },
-  categoryName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  categoryCount: {
-    fontSize: 14,
-    color: '#fff',
-    opacity: 0.9,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#666',
+  errorDetail: {
+    color: theme.colors.neutral600,
     textAlign: 'center',
-    marginTop: 20,
   },
 });
 
