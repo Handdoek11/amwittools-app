@@ -15,7 +15,7 @@ import { useQuery } from 'react-query';
 import { getMainCategories, getPromotionalCategories, getPopularCategories } from '../services/productService';
 
 // Components
-import CategoryList from '../components/categories/CategoryList';
+import CategoryList from '../components/categories/CategoryCard';
 import SubcategoryList from '../components/categories/SubcategoryList';
 import { DisplaySmall, BodyMedium } from '../components/common/Typography';
 import SearchBar from '../components/common/SearchBar';
