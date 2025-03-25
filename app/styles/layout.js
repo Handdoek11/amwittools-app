@@ -69,4 +69,13 @@ export const layoutStyles = StyleSheet.create({
   paddingHorizontal: {
     paddingHorizontal: spacing.md,
   },
+  
+  // Dividers
+  divider: {
+    height: 1,
+    backgroundColor: colors.neutral300,
+    marginVertical: spacing.md,
+  },
 });
+
+export default layoutStyles;
